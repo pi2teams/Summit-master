@@ -1,0 +1,58 @@
+import { db } from "@/lib/db";
+import { jwtVerify, SignJWT } from "jose";
+import { NextResponse } from "next/server";
+import { getRawTokenFromAuthHeader } from "@/lib/auth";
+
+export async function POST(req: Request) {
+    const body = await req.json();
+    const { email, userId } = body || {};
+    if (!userId || !email) {
+        return NextResponse.json({ status: 400, slug: "missing-parameters", message: 'Missing userId or email' });
+    }
+
+    try {
+        const user = await db.user.findFirst({ where: { id: userId }, select: { imageUrl: true } });
+
+        console.log('User:', user?.imageUrl);
+
+        const token = await new SignJWT({ email, userId })
+            .setProtectedHeader({ alg: "HS256" })
+            .setIssuedAt()
+            .setIssuer("https://lumaclone.vercel.app")
+            .setAudience("https://lumaclone.vercel.app")
+            .setExpirationTime("6h")
+            .sign(new TextEncoder().encode(process.env.JWT_SECRET));
+        return NextResponse.json({ status: 200, slug: "generated-token", token, userImage: user?.imageUrl });
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ status: 500, slug: "server-error", message: "Internal server error" });
+    }
+}
+
+export interface JwtTokenPayloadStructure {
+    email: string;
+    userId: string;
+    iat: number;
+    exp: number;
+    iss: string;
+    aud: string;
+}
+
+export async function DecryptToken(token: string) {
+    try {
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET is not defined');
+        }
+        const secretKey = new TextEncoder().encode(process.env.JWT_SECRET);
+        const raw = getRawTokenFromAuthHeader(token);
+        if (!raw) throw new Error('Invalid token');
+        const { payload }: { payload: JwtTokenPayloadStructure } = await jwtVerify(raw, secretKey);
+        return payload;
+    } catch (error) {
+        console.error('Decryption error:', error);
+        if ((error as any).code === 'ERR_JWE_INVALID') {
+            throw new Error('Invalid token format');
+        }
+        throw new Error('Invalid token');
+    }
+}
