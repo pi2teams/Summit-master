@@ -17,6 +17,17 @@ export default function RootLayout({
             src="https://sdk.minepi.com/pi-sdk.js"
             strategy="beforeInteractive"
           />
+          {/* Vercel platform instrumentation (Web Analytics & Speed Insights). */}
+          <Script
+            src="/_vercel/insights/script.js"
+            strategy="afterInteractive"
+            defer
+          />
+          <Script
+            src="/_vercel/speed-insights/script.js"
+            strategy="afterInteractive"
+            defer
+          />
           <Providers>
             {children}
           </Providers>

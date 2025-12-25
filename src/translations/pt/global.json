@@ -2,7 +2,6 @@
   "titles": {
     "home": "Luma ∙ Eventos encantadores começam aqui",
     "signIn": "Entrar ∙ Luma",
-    "verifyAccount": "Verifique sua conta ∙ Luma",
     "finishSignUp": "Finalize o cadastro ∙ Luma",
     "homeAuthenticated": "Início ∙ Luma",
     "accountSettings": "Configurações da Conta ∙ Luma",
@@ -44,7 +43,7 @@
   "Welcome": "Bem-vindo à Luma",
   "SignIn": {
     "title": "Bem-vindo à Luma",
-    "subtitle": "Por favor, faça login ou cadastre-se abaixo",
+    "subtitle": "Entre com o Pi Browser para continuar",
     "emailPlaceholder": "voce@email.com",
     "phonePlaceholder": "+55 11 96123 4567",
     "usePhone": "Usar Telefone",
@@ -55,12 +54,6 @@
       "phone": "Continuar com telefone",
       "email": "Continuar com Email"
     }
-  },
-  "OTPLogin": {
-    "title": "Código OTP",
-    "subtitle": "Por favor, insira o código OTP enviado ao email informado para entrar.",
-    "resend": "Resend ",
-    "verify": "Submit"
   },
   "Settings": {
     "title": "Configurações",

@@ -15,11 +15,13 @@ import { useTranslation } from "react-i18next";
 import PaymentMethods from "./payment/PaymentMethods/PaymentMethods";
 import LumaPlus from "./payment/LumaPlus/LumaPlus";
 import PaymentHistory from "./payment/PaymentHistory/PaymentHistory";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export function SettingsForm() {
   const [isSticky, setSticky] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const handleScroll = () => {
       setSticky(window.scrollY > 150);
     };
@@ -29,26 +31,17 @@ export function SettingsForm() {
   }, []);
 
   const [activeTab, setActiveTab] = useState("account");
-  const handleChangeTab = (tab: string) => {
-    switch (tab) {
-      case "account":
-        document.title = t("titles.accountSettings");
-        break;
-      case "preferences":
-        document.title = t("titles.preferencesSettings");
-        break;
-      case "payment":
-        document.title = t("titles.paymentSettings");
-        break;
-    }
-    return setActiveTab(tab);
-  };
-
   const { t } = useTranslation();
+  const documentTitleByTab: Record<string, string> = {
+    account: t("titles.accountSettings"),
+    preferences: t("titles.preferencesSettings"),
+    payment: t("titles.paymentSettings"),
+  };
+  useDocumentTitle(documentTitleByTab[activeTab]);
 
   return (
     <div className="flex flex-col justify-center gap-5 mt-[3rem]">
-      <Tabs defaultValue={activeTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className={`sticky top-0 z-10 backdrop-blur-sm ${isSticky ? "dark:bg-zinc-900/45 bg-zinc-50/45" : ""}`}>
           <div className="container mx-auto lg:max-w-[1000px] mb-3 flex gap-5 px-3 md:px-1 lg:px-0">
             <h1 className={`dark:text-zinc-50 text-zinc-900 font-semibold ${isSticky ? "text-xl mt-2" : "text-3xl"}`}>
@@ -66,7 +59,6 @@ export function SettingsForm() {
                             data-[state=active]:text-zinc-950 data-[state=active]:border-b-2 data-[state=active]:border-zinc-950 hover:text-zinc-700 
                             transition-border-opacity
                             px-0 rounded-none data-[state=active]:bg-transparent"
-                            onClick={() => handleChangeTab("account")}
                             >
                 {t("Settings.tabs.account")}
               </TabsTrigger>
@@ -77,7 +69,6 @@ export function SettingsForm() {
                 data-[state=active]:text-zinc-950 data-[state=active]:border-b-2 data-[state=active]:border-zinc-950 hover:text-zinc-700 
                 transition-border-opacity
                 px-0 rounded-none data-[state=active]:bg-transparent"
-                onClick={() => handleChangeTab("preferences")}
                 >
                 {t("Settings.tabs.preferences")}
               </TabsTrigger>
@@ -88,7 +79,6 @@ export function SettingsForm() {
                 data-[state=active]:text-zinc-950 data-[state=active]:border-b-2 data-[state=active]:border-zinc-950 hover:text-zinc-700 
                 transition-border-opacity
                 px-0 rounded-none data-[state=active]:bg-transparent"
-                onClick={() => handleChangeTab("payment")}
               >
                 {t("Settings.tabs.payment")}
               </TabsTrigger>

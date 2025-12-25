@@ -9,10 +9,11 @@ import { api } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function Page() {
   const { t } = useTranslation();
-  document.title = t("titles.createEvent");
+  useDocumentTitle(t("titles.createEvent"));
 
   const router = useRouter();
 
@@ -21,6 +22,7 @@ export default function Page() {
 
   useEffect(() => {
     const validateToken = async () => {
+      if (typeof window === "undefined") return;
       // Garantir que a validação só aconteça uma vez
       if (hasChecked) return;
 

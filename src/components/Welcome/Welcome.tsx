@@ -1,12 +1,20 @@
+"use client";
+import { useEffect, useState } from "react";
 import { BsEmojiSmile } from "react-icons/bs";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 
 export function Welcome() {
-    const username = localStorage.getItem('username');
-    const imageURL = localStorage.getItem('userImage');
     const { t } = useTranslation();
+    const [username, setUsername] = useState("");
+    const [imageURL, setImageURL] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        setUsername(localStorage.getItem('username') || "");
+        setImageURL(localStorage.getItem('userImage'));
+    }, []);
 
     return (
         <div className="w-full h-screen flex justify-center">
