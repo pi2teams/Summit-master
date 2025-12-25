@@ -7,22 +7,24 @@ import { Welcome } from "@/components/Welcome/Welcome";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function Page() {
   const { t } = useTranslation();
 
-  document.title = t("titles.verifyAccount");
+  useDocumentTitle(t("titles.verifyAccount"));
 
   const [welcome, setWelcome] = useState(false);
 
   const router = useRouter();
   useEffect(() => {
     if(welcome) {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         router.push("/create");
       }, 3000);
+      return () => clearTimeout(timeout);
     }
-  }, [welcome])
+  }, [welcome, router])
 
   return (
     <>

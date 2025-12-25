@@ -2,16 +2,6 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: 'noreply.enz0rd@gmail.com',
-        pass: 'eqgovabozjxitvsq',
-    },
-});
-
 export async function POST(req: Request) {
     const body = await req.json();
     const { email, userId } = body || {};
@@ -20,6 +10,26 @@ export async function POST(req: Request) {
     }
 
     try {
+        const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
+        const smtpPort = Number(process.env.SMTP_PORT || 465);
+        const smtpUser = process.env.SMTP_USER;
+        const smtpPass = process.env.SMTP_PASS;
+        const smtpFrom = process.env.SMTP_FROM || `LumaClone <${smtpUser || "no-reply@example.com"}>`;
+
+        if (!smtpUser || !smtpPass) {
+            return NextResponse.json({ status: 500, slug: "smtp-not-configured", message: "SMTP credentials are not configured." });
+        }
+
+        const transporter = nodemailer.createTransport({
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpPort === 465,
+            auth: {
+                user: smtpUser,
+                pass: smtpPass,
+            },
+        });
+
         console.log('Sending OTP code to email:', email);
         console.log('User ID:', userId);
         const otpCode = Array.from(crypto.getRandomValues(new Uint8Array(2)), num => num.toString().padStart(3, '0')).join('');
@@ -55,7 +65,7 @@ export async function POST(req: Request) {
         });
 
         const mailOptions = {
-            from: '"LumaClone - enz0rd Project" <noreply.enz0rd@gmail.com>',
+            from: smtpFrom,
             to: email,
             subject: "LumaClone - OTP",
             html: `
