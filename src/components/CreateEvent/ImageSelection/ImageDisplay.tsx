@@ -1,3 +1,4 @@
+'use client';
 import Image from "next/image";
 import { RefreshCcw, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -29,6 +30,7 @@ export default function ImageDisplay({
   );
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     if (imageSet?.image) {
       localStorage.setItem("event-image", JSON.stringify(imageSet));
       setImageDetails(imageSet);
@@ -37,6 +39,7 @@ export default function ImageDisplay({
   }, [imageSet]);
 
   const fetchImage = async () => {
+    if (typeof window === "undefined") return;
     const eventImage: ImageDetails | null = JSON.parse(
       localStorage.getItem("event-image") || "null"
     );

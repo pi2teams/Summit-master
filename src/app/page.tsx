@@ -5,12 +5,20 @@ import { Header } from "@/components/Header";
 import { RandomBg } from "@/components/Background/RandomBg";
 import { Footer } from "@/components/Footer";
 import { useTranslation } from "react-i18next";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { t } = useTranslation();
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
-  document.title = t("titles.home");
-  const theme = localStorage.getItem("theme") || "light";
+  useDocumentTitle(t("titles.home"));
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedTheme = (localStorage.getItem("theme") as "light" | "dark" | null) || "light";
+    setTheme(storedTheme);
+  }, []);
 
   return (
     <div className="">

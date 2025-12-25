@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { ScrollArea } from "../../ui/scroll-area";
 import { ActualEvents } from "./ActualEvents";
@@ -145,9 +146,13 @@ export default function FeaturedHub({
 }: FeaturedHubProps) {
   const event = ActualEvents[actualEvent];
 
-  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < 768;
+  });
   
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     }

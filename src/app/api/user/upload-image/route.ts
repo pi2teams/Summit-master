@@ -1,18 +1,18 @@
-import cloudinary from "cloudinary";
-import next, { NextApiResponse } from "next";
-import { DecryptToken } from "../../auth/generate-token/route";
 import { NextResponse } from "next/server";
+import { DecryptToken } from "../../auth/generate-token/route";
 import { db } from "@/lib/db";
+import crypto from "crypto";
 
-cloudinary.v2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+function createSignature(params: Record<string, string>, secret: string) {
+  const toSign = Object.keys(params)
+    .sort()
+    .map((key) => `${key}=${params[key]}`)
+    .join("&");
+  return crypto.createHash("sha1").update(toSign + secret).digest("hex");
+}
 
-export async function POST(req: Request, res: NextResponse) {
+export async function POST(req: Request) {
   try {
-    // get user details
     const token = req.headers.get("Authorization");
     if (!token) {
       return NextResponse.json({ message: "User not authorized" }, { status: 401 });
@@ -20,42 +20,65 @@ export async function POST(req: Request, res: NextResponse) {
     const tokenInfo = await DecryptToken(token as string);
 
     const formData = await req.formData();
-    const file = formData.get('image') as File;
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
-
-    const preset = "lumaClone_" + tokenInfo.userId;
-
-    // verify if user already have an image uploaded to cloudinary
-    const isImageAlreadyUploaded = await cloudinary.v2.api.resource(preset).then(result => {
-        return result
-    }).catch(error => {
-        console.log(error)
-        if(error.message == `Resource not found - ${preset}`) {
-            next
-        }
-    })
-    if(isImageAlreadyUploaded) {
-        await cloudinary.v2.uploader.destroy(preset)
+    const file = formData.get("image") as File | null;
+    if (!file) {
+      return NextResponse.json({ message: "Missing image" }, { status: 400 });
     }
 
-    // upload image
-    const { secure_url } = await cloudinary.v2.uploader.upload(base64Image, {
-        public_id: preset
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
+
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      return NextResponse.json({ message: "Cloudinary is not configured" }, { status: 500 });
+    }
+
+    const publicId = `lumaClone_${tokenInfo.userId}`;
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+
+    const signature = createSignature(
+      {
+        overwrite: "true",
+        public_id: publicId,
+        timestamp,
+      },
+      apiSecret
+    );
+
+    const uploadBody = new FormData();
+    uploadBody.append("file", base64Image);
+    uploadBody.append("public_id", publicId);
+    uploadBody.append("overwrite", "true");
+    uploadBody.append("timestamp", timestamp);
+    uploadBody.append("api_key", apiKey);
+    uploadBody.append("signature", signature);
+
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    const uploadResp = await fetch(uploadUrl, {
+      method: "POST",
+      body: uploadBody,
     });
 
-    //save image url to user's record
-    await db.$executeRaw`UPDATE "User" SET "imageUrl" = ${secure_url} WHERE id = ${tokenInfo.userId}`
+    if (!uploadResp.ok) {
+      const errorText = await uploadResp.text();
+      console.error("Cloudinary upload failed:", errorText);
+      return NextResponse.json({ message: "Image upload failed" }, { status: 500 });
+    }
 
-    console.log({
-        userId: tokenInfo.userId,
-        secure_url,
-    });
+    const { secure_url } = (await uploadResp.json()) as { secure_url?: string };
+    if (!secure_url) {
+      return NextResponse.json({ message: "Image upload failed" }, { status: 500 });
+    }
+
+    await db.$executeRaw`UPDATE "User" SET "imageUrl" = ${secure_url} WHERE id = ${tokenInfo.userId}`;
 
     return NextResponse.json({ url: secure_url }, { status: 200 });
   } catch (err: any) {
-    console.log(err)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500  });
+    console.error(err);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }

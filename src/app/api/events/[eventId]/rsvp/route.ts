@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { verifySummitToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-export async function POST(req: Request, ctx: { params: { eventId: string } }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ eventId: string }> }
+) {
   try {
     const payload = await verifySummitToken(req.headers.get("Authorization"));
-    const { eventId } = ctx.params;
+    const { eventId } = await params;
     const body = await req.json().catch(() => ({}));
     const ticketTypeId: string | undefined = body?.ticketTypeId;
 
