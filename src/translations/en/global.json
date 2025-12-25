@@ -2,7 +2,6 @@
   "titles": {
     "home": "Luma ∙ Enchanting events start here",
     "signIn": "Sign In ∙ Luma",
-    "verifyAccount": "Verify your account ∙ Luma",
     "finishSignUp": "Finish signing up ∙ Luma",
     "homeAuthenticated": "Home ∙ Luma",
     "accountSettings": "Account Settings ∙ Luma",
@@ -44,7 +43,7 @@
   "Welcome": "Welcome to Luma",
   "SignIn": {
     "title": "Welcome to Luma",
-    "subtitle": "Please sign in or register below",
+    "subtitle": "Sign in with Pi Browser to continue",
     "emailPlaceholder": "you@email.com",
     "phonePlaceholder": "+1 123 456 7890",
     "usePhone": "Use Phone",
@@ -55,12 +54,6 @@
       "phone": "Continue with Phone",
       "email": "Continue with Email"
     }
-  },
-  "OTPLogin": {
-    "title": "OTP Code",
-    "subtitle": "Please enter the OTP code sent to the provided email to sign in.",
-    "resend": "Resend ",
-    "verify": "Submit"
   },
   "Settings": {
     "title": "Settings",

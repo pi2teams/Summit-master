@@ -82,8 +82,12 @@ export default function ImageSelection({
     setCategory(category);
   };
 
-  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < 768;
+  });
   useEffect(() => {
+    if (typeof window === "undefined") return;
     // Adiciona um listener para mudanças de largura da tela
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);

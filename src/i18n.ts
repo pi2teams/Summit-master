@@ -3,8 +3,10 @@ import { initReactI18next } from 'react-i18next';
 import en from './translations/en/global.json'
 import pt from './translations/pt/global.json'
 
+const isProd = process.env.NODE_ENV === "production";
+
 i18n.use(initReactI18next).init({
-    debug: true,
+    debug: !isProd,
     fallbackLng: 'en',
     resources: {
         en: {

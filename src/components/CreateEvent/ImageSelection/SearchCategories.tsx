@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
 import { X } from "lucide-react";
@@ -48,7 +49,10 @@ export default function SearchCategories({
     Math.max(0, categories.indexOf(categoryInUse))
   );
 
-  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < 768;
+  });
 
   useEffect(() => {
     // Atualiza o estado quando `categoryInUse` muda
@@ -57,6 +61,7 @@ export default function SearchCategories({
   }, [categoryInUse]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     // Adiciona um listener para mudanças de largura da tela
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
