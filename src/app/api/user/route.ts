@@ -8,51 +8,10 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    console.log(body.email);
-
-    // check if user exists
-    const existingUserEmail = await db.userEmails.findUnique({
-      where: { email: body.email },
-    });
-
-    
-    if (existingUserEmail) {
-      const existingUser = await db.user.findUnique({
-        where: { id: existingUserEmail?.userId },
-      });
-      return NextResponse.json({
-        status: 409,
-        slug: "user-exists",
-        user: {
-          id: existingUserEmail.userId,
-          email: existingUserEmail.email,
-          username: existingUser?.username 
-        },
-        message: "Proceeding to OTP login",
-      });
-    }
-    
-    const newUser = await db.user.create({
-      data: {
-        verified: false,
-      },
-    });
-
-    await db.userEmails.create({
-      data: {
-        email: body.email,
-        userId: newUser.id,
-      },
-    });
-
     return NextResponse.json({
-      status: 200,
-      slug: "user-created",
-      user: {
-        id: newUser.id,
-        email: body.email,
-      },
-      message: "User created successfully",
+      status: 400,
+      slug: "email-auth-disabled",
+      message: "Email/OTP authentication is disabled. Please sign in with Pi Browser.",
     });
   } catch (error) {
     console.error(error);
